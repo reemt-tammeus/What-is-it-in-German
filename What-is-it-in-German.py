@@ -2,6 +2,9 @@ import streamlit as st
 from PIL import Image, ImageDraw
 import os
 
+# Setzt das Layout auf die volle 16:9 Breite
+st.set_page_config(page_title="Say it in German", layout="wide")
+
 masken_farbe = "#000000" 
 
 # --- CSS STYLING ---
@@ -66,17 +69,16 @@ col_bild, col_steuerung = st.columns([1, 1], gap="large")
 with col_steuerung:
     st.write("")
     st.write("")
-    st.title("🗣️ Say it in English!")
+    st.title("🗣️ Say it in German!")
     st.write("---")
     
     if st.session_state.schritt == 1:
         st.subheader("🤔 What is the German idiom?")
     elif st.session_state.schritt == 2:
-        st.subheader("📖 German idiom & Options") 
-    elif st.session_state.schritt == 3:
         st.subheader("❓ What is the correct English phrase?")
+    elif st.session_state.schritt == 3:
+         st.subheader("✅ The correct answer!")
     elif st.session_state.schritt == 4:
-        st.subheader("✅ The correct answer!")
         st.success("Did you choose the right solution?")
         
     st.write("---")
