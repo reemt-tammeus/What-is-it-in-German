@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image, ImageDraw
 import os
+import json
 
 # Setzt das Layout auf die volle 16:9 Breite
 st.set_page_config(page_title="Say it in German", layout="wide")
@@ -20,14 +21,14 @@ st.markdown(
         color: #FFFFFF !important;
     }}
     
-    /* 1) SChrift für die Subheader (Texte) doppelt so groß machen (~48px) */
+    /* SChrift für die Subheader (Texte) doppelt so groß machen (~48px) */
     h3 {{
         color: #FFFFFF !important;
         font-size: 48px !important;
         line-height: 1.3 !important;
     }}
 
-    /* 2) Großer Smartboard-Button - Höhe angepasst für die neue Schriftgröße */
+    /* Großer Smartboard-Button - Höhe angepasst */
     .stButton>button {{
         min-height: 120px !important;
         border-radius: 10px;
@@ -44,13 +45,13 @@ st.markdown(
         margin: 0 !important;
     }}
 
-    /* 3) Invertierung der Buttons korrigieren (Hover-Status) */
+    /* Invertierung der Buttons korrigieren (Hover-Status) */
     .stButton>button:hover {{
-        background-color: #4CAF50 !important; /* Füllt sich beim Drüberfahren grün */
+        background-color: #4CAF50 !important; 
         border: 3px solid #4CAF50 !important;
     }}
     .stButton>button:hover p {{
-        color: #000000 !important; /* Schrift wird schwarz für perfekten Kontrast */
+        color: #000000 !important; 
     }}
     .stButton>button:active {{
         background-color: #3e8e41 !important;
@@ -75,68 +76,96 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# --- DATEN LADEN ---
+# Diese Funktion lädt die JSON-Datei nur einmal und speichert sie im Cache
+@st.cache_data
+def lade_idiom_daten():
+    try:
+        with open("idioms.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
+
+idioms_daten = lade_idiom_daten()
+
 # --- SPIEL-LOGIK ---
-# Initialisiere den Fortschritt des Spiels
+# Initialisiere den Fortschritt und den Bild-Index
 if 'schritt' not in st.session_state:
     st.session_state.schritt = 1
+if 'idiom_index' not in st.session_state:
+    st.session_state.idiom_index = 0
 
 def naechster_schritt():
     if st.session_state.schritt >= 4:
+        # Reset auf Schritt 1 für das nächste Bild
         st.session_state.schritt = 1
+        # Gehe zum nächsten Bild-Paar, oder fange wieder bei 0 an, wenn wir bei 32 sind
+        if st.session_state.idiom_index < len(idioms_daten) - 1:
+            st.session_state.idiom_index += 1
+        else:
+            st.session_state.idiom_index = 0
     else:
         st.session_state.schritt += 1
 
-# Dateipfade anpassen (Ordner 'Pictures')
-bild_1_pfad = os.path.join("Pictures", "1a.jpg")
-bild_2_pfad = os.path.join("Pictures", "1b.jpg")
+# Überprüfen, ob Daten geladen wurden
+if not idioms_daten:
+    st.error("Fehler: Konnte 'idioms.json' nicht finden. Bitte erstelle die Datei im selben Ordner.")
+else:
+    # Aktuelle Bildpfade dynamisch aus der JSON-Datei laden
+    aktuelles_idiom = idioms_daten[st.session_state.idiom_index]
+    bild_1_pfad = os.path.join("Pictures", aktuelles_idiom["image_a"])
+    bild_2_pfad = os.path.join("Pictures", aktuelles_idiom["image_b"])
 
-# --- LAYOUT-AUFTEILUNG (1:1) ---
-col_bild, col_steuerung = st.columns([1, 1], gap="large")
+    # --- LAYOUT-AUFTEILUNG (1:1) ---
+    col_bild, col_steuerung = st.columns([1, 1], gap="large")
 
-# RECHTE SEITE: Steuerung und Texte
-with col_steuerung:
-    st.write("")
-    st.write("")
-    st.title("")
-    st.write("---")
-    
-    if st.session_state.schritt == 1:
-        st.subheader("🤔 What is the German idiom?")
-    elif st.session_state.schritt == 2:
-        st.subheader("")
-    elif st.session_state.schritt == 3:
-        st.subheader("❓ What is the correct English phrase?")
-    elif st.session_state.schritt == 4:
-        st.subheader("✅ Here is the correct answer!")
+    # RECHTE SEITE: Steuerung und Texte
+    with col_steuerung:
+        st.write("")
+        st.write("")
+        st.title("")
+        st.write("---")
         
-    st.write("---")
-    
-    if st.session_state.schritt < 4:
-        st.button("Go on ➡️", on_click=naechster_schritt, use_container_width=True)
-    else:
-        st.button("Next idiom 🔄", on_click=naechster_schritt, use_container_width=True)
-
-# LINKE SEITE: Bildanzeige und Aufdecken
-with col_bild:
-    if st.session_state.schritt == 1:
-        st.image(bild_1_pfad, use_container_width=True)
-
-    elif st.session_state.schritt in [2, 3, 4]:
-        # Lade das zweite Bild und bereite es zum Zeichnen vor
-        bild2 = Image.open(bild_2_pfad).convert("RGB")
-        breite, hoehe = bild2.size
-        draw = ImageDraw.Draw(bild2)
-
-        if st.session_state.schritt == 2:
-            # Übermalt alles unterhalb von 25% (Lösung + Optionen versteckt)
-            draw.rectangle([0, hoehe * 0.25, breite, hoehe], fill=masken_farbe)
-            st.image(bild2, use_container_width=True)
-
+        if st.session_state.schritt == 1:
+            st.subheader("🤔 What is the German idiom?")
+        elif st.session_state.schritt == 2:
+            st.subheader("")
         elif st.session_state.schritt == 3:
-            # Übermalt alles unterhalb von 85% (Nur Lösung unten links versteckt)
-            draw.rectangle([0, hoehe * 0.85, breite, hoehe], fill=masken_farbe)
-            st.image(bild2, use_container_width=True)
-
+            st.subheader("❓ What is the correct English phrase?")
         elif st.session_state.schritt == 4:
-            # Zeigt das komplette Bild unmaskiert
-            st.image(bild2, use_container_width=True)
+            st.subheader("✅ Here is the correct answer!")
+            
+        st.write("---")
+        
+        if st.session_state.schritt < 4:
+            st.button("Go on ➡️", on_click=naechster_schritt, use_container_width=True)
+        else:
+            st.button("Next idiom 🔄", on_click=naechster_schritt, use_container_width=True)
+        
+        # Zeigt an, bei welchem Bild ihr gerade seid (optional, hilft zur Orientierung)
+        st.markdown(f"<p style='text-align: right; color: gray;'>Idiom {st.session_state.idiom_index + 1} / {len(idioms_daten)}</p>", unsafe_allow_html=True)
+
+    # LINKE SEITE: Bildanzeige und Aufdecken
+    with col_bild:
+        try:
+            if st.session_state.schritt == 1:
+                st.image(bild_1_pfad, use_container_width=True)
+
+            elif st.session_state.schritt in [2, 3, 4]:
+                # Lade das zweite Bild und bereite es zum Zeichnen vor
+                bild2 = Image.open(bild_2_pfad).convert("RGB")
+                breite, hoehe = bild2.size
+                draw = ImageDraw.Draw(bild2)
+
+                if st.session_state.schritt == 2:
+                    draw.rectangle([0, hoehe * 0.25, breite, hoehe], fill=masken_farbe)
+                    st.image(bild2, use_container_width=True)
+
+                elif st.session_state.schritt == 3:
+                    draw.rectangle([0, hoehe * 0.85, breite, hoehe], fill=masken_farbe)
+                    st.image(bild2, use_container_width=True)
+
+                elif st.session_state.schritt == 4:
+                    st.image(bild2, use_container_width=True)
+        except FileNotFoundError:
+            st.error(f"Fehler: Konnte das Bild nicht finden. Bitte stelle sicher, dass {bild_1_pfad} und {bild_2_pfad} existieren.")
