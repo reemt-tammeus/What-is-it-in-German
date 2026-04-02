@@ -79,7 +79,7 @@ with col_steuerung:
     elif st.session_state.schritt == 3:
          st.subheader("❓ What is the correct English phrase?")
     elif st.session_state.schritt == 4:
-        st.success("✅ Here is the correct answer!")
+        st.subheader("✅ Here is the correct answer!")
         
     st.write("---")
     
