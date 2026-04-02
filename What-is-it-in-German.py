@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image, ImageDraw
 import os
 
-st.set_page_config(page_title="Say it in English", layout="wide")
+st.set_page_config(page_title="Say it in German", layout="wide")
 
 masken_farbe = "#000000" 
 
@@ -69,22 +69,19 @@ with col_steuerung:
     st.write("---")
     
     if st.session_state.schritt == 1:
-        st.subheader("🤔 Was bedeutet das wirklich?")
-    elif st.session_state.schritt == 2:
-        st.subheader("📖 Deutsches Sprichwort & Optionen")
-    elif st.session_state.schritt == 3:
+        st.subheader("🤔 What is the German idiom??")
+      elif st.session_state.schritt == 3:
         st.subheader("❓ What is the correct English phrase?")
-        st.info("Sprich deine Antwort jetzt laut aus!")
     elif st.session_state.schritt == 4:
-        st.subheader("✅ Die Lösung!")
-        st.success("Hattest du recht?")
+        st.subheader("✅ The correct answer!")
+        st.success("Did you choose the right solution?")
         
     st.write("---")
     
     if st.session_state.schritt < 4:
-        st.button("Weiter ➡️", on_click=naechster_schritt, use_container_width=True)
+        st.button("Go on ➡️", on_click=naechster_schritt, use_container_width=True)
     else:
-        st.button("Nächstes Sprichwort 🔄", on_click=naechster_schritt, use_container_width=True)
+        st.button("Next idiom 🔄", on_click=naechster_schritt, use_container_width=True)
 
 with col_bild:
     # use_container_width=True ist wieder drin, aber unser CSS überschreibt es 
