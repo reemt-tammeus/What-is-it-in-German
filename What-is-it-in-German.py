@@ -2,9 +2,6 @@ import streamlit as st
 from PIL import Image, ImageDraw
 import os
 
-# Setzt das Layout auf die volle 16:9 Breite
-st.set_page_config(page_title="Say it in English", layout="wide")
-
 masken_farbe = "#000000" 
 
 # --- CSS STYLING ---
