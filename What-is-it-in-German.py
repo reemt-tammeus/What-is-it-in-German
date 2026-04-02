@@ -15,17 +15,45 @@ st.markdown(
     .stApp {{
         background-color: {masken_farbe} !important;
     }}
-    /* Textfarbe weiß */
-    h1, h2, h3, p, span, div {{
+    /* Standard-Textfarbe weiß */
+    h1, h2, p, span, div {{
         color: #FFFFFF !important;
     }}
-    /* Großer Smartboard-Button */
+    
+    /* 1) SChrift für die Subheader (Texte) doppelt so groß machen (~48px) */
+    h3 {{
+        color: #FFFFFF !important;
+        font-size: 48px !important;
+        line-height: 1.3 !important;
+    }}
+
+    /* 2) Großer Smartboard-Button - Höhe angepasst für die neue Schriftgröße */
     .stButton>button {{
-        height: 80px;
-        font-size: 24px;
-        font-weight: bold;
+        min-height: 120px !important;
         border-radius: 10px;
-        border: 2px solid #4CAF50;
+        border: 3px solid #4CAF50 !important;
+        background-color: transparent !important;
+        transition: all 0.3s ease-in-out !important;
+    }}
+    
+    /* Schriftgröße im Button exakt wie oben */
+    .stButton>button p {{
+        font-size: 48px !important;
+        font-weight: bold !important;
+        color: #FFFFFF !important;
+        margin: 0 !important;
+    }}
+
+    /* 3) Invertierung der Buttons korrigieren (Hover-Status) */
+    .stButton>button:hover {{
+        background-color: #4CAF50 !important; /* Füllt sich beim Drüberfahren grün */
+        border: 3px solid #4CAF50 !important;
+    }}
+    .stButton>button:hover p {{
+        color: #000000 !important; /* Schrift wird schwarz für perfekten Kontrast */
+    }}
+    .stButton>button:active {{
+        background-color: #3e8e41 !important;
     }}
     
     /* Zentriert das Bild in seiner Spalte */
@@ -77,7 +105,7 @@ with col_steuerung:
     elif st.session_state.schritt == 2:
         st.subheader("")
     elif st.session_state.schritt == 3:
-         st.subheader("❓ What is the correct English phrase?")
+        st.subheader("❓ What is the correct English phrase?")
     elif st.session_state.schritt == 4:
         st.subheader("✅ Here is the correct answer!")
         
