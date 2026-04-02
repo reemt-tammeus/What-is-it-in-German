@@ -75,11 +75,11 @@ with col_steuerung:
     if st.session_state.schritt == 1:
         st.subheader("🤔 What is the German idiom?")
     elif st.session_state.schritt == 2:
-        st.subheader("❓ What is the correct English phrase?")
+        st.subheader("")
     elif st.session_state.schritt == 3:
-         st.subheader("✅ The correct answer!")
+         st.subheader("❓ What is the correct English phrase?")
     elif st.session_state.schritt == 4:
-        st.success("Did you choose the right solution?")
+        st.success("✅ The correct answer!")
         
     st.write("---")
     
