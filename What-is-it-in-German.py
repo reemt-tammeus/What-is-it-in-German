@@ -26,14 +26,21 @@ st.markdown(
         border: 2px solid #4CAF50;
     }}
     
-    /* --- DER WICHTIGE NEUE TEIL --- */
-    /* Zwingt das Bild, IMMER komplett auf den Bildschirm zu passen */
+    /* --- DIE LÖSUNG FÜR DIE PROPORTIONEN --- */
+    /* Macht den Bild-Container zu einer Flexbox und zentriert alles */
+    [data-testid="stImage"] {{
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: 80vh !important; /* Nimmt 80% der Bildschirmhöhe ein */
+    }}
+    
+    /* Zwingt das Bild, den Container perfekt auszufüllen, ohne zu verzerren */
     [data-testid="stImage"] img {{
-        max-height: 85vh !important; /* Maximal 85% der Bildschirmhöhe */
-        width: auto !important;      /* Breite passt sich automatisch an */
-        object-fit: contain !important; /* Bild wird nicht verzerrt */
-        margin: 0 auto !important;   /* Zentriert das Bild in der linken Spalte */
-        display: block !important;
+        max-height: 100% !important;
+        max-width: 100% !important;
+        width: auto !important; 
+        object-fit: contain !important;
     }}
     </style>
     """,
@@ -53,11 +60,13 @@ def naechster_schritt():
 bild_1_pfad = os.path.join("Pictures", "1a.jpg")
 bild_2_pfad = os.path.join("Pictures", "1b.jpg")
 
-
-# Zwei Spalten. Links: Bild (2 Anteile). Rechts: Steuerung (1 Anteil).
-col_bild, col_steuerung = st.columns([2, 1], gap="large")
+# --- SPALTEN AUF 1:1 ANGEPASST ---
+col_bild, col_steuerung = st.columns([1, 1], gap="large")
 
 with col_steuerung:
+    # Ein paar leere Zeilen, damit die Steuerung vertikal weiter unten startet
+    st.write("")
+    st.write("")
     st.title("🗣️ Say it in English!")
     st.write("---")
     
@@ -79,12 +88,11 @@ with col_steuerung:
     else:
         st.button("Nächstes Sprichwort 🔄", on_click=naechster_schritt, use_container_width=True)
 
-
 with col_bild:
-    # use_container_width=True wird jetzt durch unser CSS überschrieben, 
-    # sobald das Bild droht, zu hoch für den Bildschirm zu werden!
+    # use_container_width=True wurde entfernt, da unser neues CSS jetzt 
+    # die perfekte, mittige Skalierung übernimmt!
     if st.session_state.schritt == 1:
-        st.image(bild_1_pfad, use_container_width=True)
+        st.image(bild_1_pfad)
 
     elif st.session_state.schritt in [2, 3, 4]:
         bild2 = Image.open(bild_2_pfad).convert("RGB")
@@ -93,11 +101,11 @@ with col_bild:
 
         if st.session_state.schritt == 2:
             draw.rectangle([0, hoehe * 0.25, breite, hoehe], fill=masken_farbe)
-            st.image(bild2, use_container_width=True)
+            st.image(bild2)
 
         elif st.session_state.schritt == 3:
             draw.rectangle([0, hoehe * 0.85, breite, hoehe], fill=masken_farbe)
-            st.image(bild2, use_container_width=True)
+            st.image(bild2)
 
         elif st.session_state.schritt == 4:
-            st.image(bild2, use_container_width=True)
+            st.image(bild2)
