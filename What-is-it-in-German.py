@@ -69,7 +69,7 @@ col_bild, col_steuerung = st.columns([1, 1], gap="large")
 with col_steuerung:
     st.write("")
     st.write("")
-    st.title("🗣️ Say it in German!")
+    st.title("")
     st.write("---")
     
     if st.session_state.schritt == 1:
