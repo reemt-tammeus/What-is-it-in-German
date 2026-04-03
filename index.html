@@ -13,38 +13,37 @@
             color: #FFFFFF;
             font-family: sans-serif;
             display: flex;
-            height: 100vh; /* Exakt 100% Bildschirmhöhe, kein Scrollen! */
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* LINKE SPALTE: BILD - MAXIMIERT FÜR SMARTBOARD */
+        /* LINKE SPALTE: BILD */
         #left-pane {
-            flex: 1.2; /* Mehr Platz für das Bild (ca. 55% der Breite) */
+            flex: 1.2;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Nutzt die VOLLE Höhe des Bildschirms */
-            padding: 0; /* KEIN Padding, Bild darf bis an den Rand gehen! */
+            height: 100vh;
+            padding: 0;
             background-color: #000000;
         }
 
         #image-canvas {
-            width: 100%; /* Erlaubt dem Bild, die volle Breite zu nutzen */
-            height: 100%; /* Erlaubt dem Bild, die volle Höhe zu nutzen */
-            object-fit: contain; /* Behält Seitenverhältnis bei, füllt den Platz maximal aus, nichts wird abgeschnitten! */
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
-        /* RECHTE SPALTE: STEUERUNG (unverändert, da "super") */
+        /* RECHTE SPALTE: STEUERUNG */
         #right-pane {
-            flex: 1; /* Ca. 45% der Breite */
+            flex: 1;
             max-width: 600px;
             display: flex;
             flex-direction: column;
             padding: 40px;
             box-sizing: border-box;
-            border-left: 1px solid #333; /* Dezente Trennlinie */
+            border-left: 1px solid #333;
             background-color: #000000;
-            overflow-y: auto; /* Erlaubt Scrollen NUR auf der rechten Seite, falls der Text extrem lang wird */
         }
 
         /* LOGO */
@@ -69,9 +68,15 @@
             cursor: pointer;
             outline: none;
         }
-        #set-select option {
-            background-color: #111111;
-            color: #FFFFFF;
+
+        /* SIGNALISIERUNG: Wenn das Set beendet ist, soll das Menü leicht pulsieren */
+        .pulse-border {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { border-color: #FFFFFF; }
+            50% { border-color: #4CAF50; box-shadow: 0 0 15px #4CAF50; }
+            100% { border-color: #FFFFFF; }
         }
 
         /* FRAGENTEXT */
@@ -79,8 +84,12 @@
             font-size: 42px;
             font-weight: bold;
             text-align: center;
-            margin: auto 0; /* Drückt den Text in die Mitte der freien Fläche */
+            margin: auto 0;
             line-height: 1.3;
+        }
+        .finished-text {
+            color: #4CAF50 !important;
+            font-size: 50px !important;
         }
 
         /* BUTTON */
@@ -95,11 +104,16 @@
             cursor: pointer;
             transition: all 0.3s ease-in-out;
             width: 100%;
-            margin-top: auto; /* Drückt den Button nach unten */
+            margin-top: auto;
         }
-        #action-btn:hover {
+        #action-btn:hover:not(:disabled) {
             background-color: #4CAF50;
             color: #000000;
+        }
+        #action-btn:disabled {
+            border-color: #333;
+            color: #333;
+            cursor: not-allowed;
         }
 
         /* COUNTER */
@@ -136,8 +150,8 @@
         let currentSetPool = [];
         let currentIdiomIndex = 0;
         let currentStep = 1;
+        let isFinished = false;
 
-        // DOM Elemente verknüpfen
         const canvas = document.getElementById("image-canvas");
         const ctx = canvas.getContext("2d");
         const setSelect = document.getElementById("set-select");
@@ -145,20 +159,17 @@
         const actionBtn = document.getElementById("action-btn");
         const counterText = document.getElementById("counter");
 
-        // 1. JSON-Daten laden
         fetch('idioms.json')
             .then(response => response.json())
             .then(data => {
                 allIdioms = data;
                 initMenu();
-                changeSet(); // Erstes Set sofort laden
+                changeSet();
             })
             .catch(err => {
                 questionText.innerHTML = "Fehler: 'idioms.json' nicht gefunden!";
-                console.error(err);
             });
 
-        // 2. Dropdown Menü aufbauen
         function initMenu() {
             for(let i=1; i<=10; i++) {
                 let opt = document.createElement("option");
@@ -171,7 +182,6 @@
             setSelect.addEventListener("change", changeSet);
         }
 
-        // 3. Mischen-Funktion (Shuffle)
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex !== 0) {
@@ -182,41 +192,61 @@
             return array;
         }
 
-        // 4. Set wechseln und mischen
         function changeSet() {
             let setNum = parseInt(setSelect.value);
             let startIndex = (setNum - 1) * 6;
             let endIndex = setNum < 10 ? startIndex + 6 : 59;
             
-            // Pool kopieren und mischen
             currentSetPool = allIdioms.slice(startIndex, endIndex);
             shuffle(currentSetPool);
             
             currentIdiomIndex = 0;
             currentStep = 1;
+            isFinished = false;
+            
+            // UI zurücksetzen
+            setSelect.classList.remove("pulse-border");
+            actionBtn.disabled = false;
+            
             updateView();
         }
 
-        // 5. Button Klick-Logik
         actionBtn.addEventListener("click", () => {
+            if(isFinished) return;
+
             if(currentStep >= 4) {
+                // Wenn wir beim letzten Idiom des Sets sind und die Lösung gezeigt wurde
+                if(currentIdiomIndex >= currentSetPool.length - 1) {
+                    isFinished = true;
+                    updateView();
+                    return;
+                }
                 currentStep = 1;
                 currentIdiomIndex++;
-                if(currentIdiomIndex >= currentSetPool.length) {
-                    currentIdiomIndex = 0; // Fängt im Set wieder von vorn an
-                }
             } else {
                 currentStep++;
             }
             updateView();
         });
 
-        // 6. Ansicht aktualisieren (Texte & Bild)
         function updateView() {
+            if(isFinished) {
+                questionText.innerText = "Set beendet!";
+                questionText.classList.add("finished-text");
+                actionBtn.innerText = "Neues Set wählen";
+                actionBtn.disabled = true;
+                setSelect.classList.add("pulse-border");
+                
+                // Canvas leeren oder Abschlussbild zeigen
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            questionText.classList.remove("finished-text");
             let currentIdiom = currentSetPool[currentIdiomIndex];
             if(!currentIdiom) return;
 
-            // Texte anpassen
             if(currentStep === 1) {
                 questionText.innerText = "What is the German idiom?";
                 actionBtn.innerText = "Go on";
@@ -233,24 +263,20 @@
 
             counterText.innerText = `Idiom ${currentIdiomIndex + 1} / ${currentSetPool.length}`;
 
-            // Bild laden und mit schwarzen Balken maskieren
             let imgObj = new Image();
             imgObj.onload = () => {
                 canvas.width = imgObj.width;
                 canvas.height = imgObj.height;
                 ctx.drawImage(imgObj, 0, 0);
                 
-                // Zeichnet exakt die gleichen schwarzen Rechtecke wie das alte Python-Script
                 ctx.fillStyle = "#000000";
                 if (currentStep === 2) {
                     ctx.fillRect(0, imgObj.height * 0.25, imgObj.width, imgObj.height);
                 } else if (currentStep === 3) {
-                    // Maske bei 12% (0.88), um den unteren Kreis zuverlässig zu verdecken
                     ctx.fillRect(0, imgObj.height * 0.88, imgObj.width, imgObj.height);
                 }
             };
             
-            // Entscheidet, ob Bild A (Falsch) oder Bild B (Auflösung) geladen wird
             let pfad = (currentStep === 1) ? currentIdiom.image_a : currentIdiom.image_b;
             imgObj.src = "Pictures/" + pfad;
         }
