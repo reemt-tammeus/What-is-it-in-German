@@ -21,25 +21,25 @@ st.markdown(
         color: #FFFFFF !important;
     }}
     
-    /* SChrift für die Subheader (Texte) doppelt so groß machen (~48px) */
+    /* Schrift für die Subheader (Texte) etwas anpassen */
     h3 {{
         color: #FFFFFF !important;
         font-size: 48px !important;
         line-height: 1.3 !important;
     }}
 
-    /* Großer Smartboard-Button - Höhe angepasst */
+    /* Smartboard-Button - Höhe verkleinert auf 80px */
     .stButton>button {{
-        min-height: 120px !important;
+        min-height: 80px !important;
         border-radius: 10px;
         border: 3px solid #4CAF50 !important;
         background-color: transparent !important;
         transition: all 0.3s ease-in-out !important;
     }}
     
-    /* Schriftgröße im Button exakt wie oben */
+    /* Schriftgröße im Button verkleinert auf 32px */
     .stButton>button p {{
-        font-size: 48px !important;
+        font-size: 32px !important;
         font-weight: bold !important;
         color: #FFFFFF !important;
         margin: 0 !important;
@@ -99,7 +99,7 @@ def naechster_schritt():
     if st.session_state.schritt >= 4:
         # Reset auf Schritt 1 für das nächste Bild
         st.session_state.schritt = 1
-        # Gehe zum nächsten Bild-Paar, oder fange wieder bei 0 an, wenn wir bei 32 sind
+        # Gehe zum nächsten Bild-Paar, oder fange wieder bei 0 an, wenn wir am Ende sind
         if st.session_state.idiom_index < len(idioms_daten) - 1:
             st.session_state.idiom_index += 1
         else:
@@ -142,7 +142,7 @@ else:
         else:
             st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
-        # Zeigt an, bei welchem Bild ihr gerade seid (optional, hilft zur Orientierung)
+        # Zeigt an, bei welchem Bild ihr gerade seid
         st.markdown(f"<p style='text-align: right; color: gray;'>Idiom {st.session_state.idiom_index + 1} / {len(idioms_daten)}</p>", unsafe_allow_html=True)
 
     # LINKE SEITE: Bildanzeige und Aufdecken
@@ -162,7 +162,8 @@ else:
                     st.image(bild2, use_container_width=True)
 
                 elif st.session_state.schritt == 3:
-                    draw.rectangle([0, hoehe * 0.85, breite, hoehe], fill=masken_farbe)
+                    # HIER GEÄNDERT: Startet das Zeichnen erst bei 93% (verdeckt nur 7% für 2-zeilige Antworten)
+                    draw.rectangle([0, hoehe * 0.93, breite, hoehe], fill=masken_farbe)
                     st.image(bild2, use_container_width=True)
 
                 elif st.session_state.schritt == 4:
