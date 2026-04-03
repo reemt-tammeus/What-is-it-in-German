@@ -4,7 +4,7 @@ import os
 import json
 import random
 
-# Setzt das Layout auf die volle 16:9 Breite und den Tab-Titel
+# Setzt das Layout auf die volle 16:9 Breite
 st.set_page_config(page_title="I spider", layout="wide")
 
 masken_farbe = "#000000" 
@@ -18,26 +18,22 @@ st.markdown(
         background-color: {masken_farbe} !important;
     }}
     
-    /* Standard-Textfarbe weiß (außerhalb des Dropdowns) */
-    .main h1, .main h2, .main p, .main span, .main label {{
-        color: #FFFFFF !important;
-    }}
-    
-    /* Nimmt das obere Padding weg, ERLAUBT ABER SCROLLEN falls der Bildschirm extrem klein ist (kein Abschneiden mehr!) */
+    /* Entfernt die riesigen Ränder oben und unten, verhindert Scrollen */
     .block-container {{
-        padding-top: 1.5rem !important;
-        padding-bottom: 1rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 0rem !important;
         max-width: 98% !important;
     }}
 
-    /* Textformatierung */
-    h3 {{
+    /* Eigene Klasse für unseren Fragentext (verhindert, dass wir andere Streamlit-Texte kaputt machen) */
+    .frage-text {{
         color: #FFFFFF !important;
         font-size: 42px !important;
         line-height: 1.3 !important;
         text-align: center !important;
-        margin-top: 20px !important;
-        margin-bottom: 30px !important;
+        margin-top: 10vh !important; /* Dynamischer Abstand nach oben */
+        margin-bottom: 5vh !important; /* Dynamischer Abstand nach unten */
+        font-weight: bold;
     }}
 
     /* Smartboard-Button */
@@ -47,6 +43,7 @@ st.markdown(
         border: 3px solid #4CAF50 !important;
         background-color: transparent !important;
         transition: all 0.3s ease-in-out !important;
+        width: 100% !important;
     }}
     
     .stButton>button p {{
@@ -64,7 +61,7 @@ st.markdown(
         color: #000000 !important; 
     }}
     
-    /* BILDGRÖSSE BLEIBT AUF 85% */
+    /* BILDGRÖSSE: Fest auf 85% der Bildschirmhöhe angenagelt */
     [data-testid="stImage"] {{
         display: flex !important;
         justify-content: center !important;
@@ -76,27 +73,6 @@ st.markdown(
         width: auto !important;      
         max-width: 100% !important;  
         object-fit: contain !important; 
-    }}
-    
-    /* --- DROP-DOWN STYLING REPARIERT --- */
-    /* Geschlossener Zustand */
-    .stSelectbox div[data-baseweb="select"] > div {{
-        background-color: #111111 !important;
-        border: 2px solid #FFFFFF !important;
-    }}
-    .stSelectbox div[data-baseweb="select"] span {{
-        color: #FFFFFF !important;
-        font-size: 24px !important;
-    }}
-    
-    /* Geöffneter Zustand (Dropdown-Liste) -> Erzwungen auf schwarze Schrift für Lesbarkeit */
-    div[data-baseweb="popover"] li {{
-        color: #000000 !important; 
-        font-size: 20px !important;
-    }}
-    div[data-baseweb="popover"] li:hover {{
-        background-color: #4CAF50 !important;
-        color: #000000 !important;
     }}
     </style>
     """,
@@ -186,7 +162,7 @@ else:
                         st.image(bild2, use_container_width=True)
 
                     elif st.session_state.schritt == 3:
-                        # HIER GEÄNDERT: Maske auf 12% hochgezogen (0.88 statt 0.90), damit auch bei Bild 1 der rote Kreis weg ist
+                        # Maske liegt stabil bei 12%, verdeckt auch den tiefsten Lösungs-Kreis
                         draw.rectangle([0, hoehe * 0.88, breite, hoehe], fill=masken_farbe)
                         st.image(bild2, use_container_width=True)
 
@@ -195,26 +171,27 @@ else:
             except FileNotFoundError:
                 st.error(f"Bild nicht gefunden: {bild_1_pfad} oder {bild_2_pfad}")
 
-    # RECHTE SEITE: Steuerung 
+    # RECHTE SEITE: Steuerung (Robustes Layout)
     with col_steuerung:
-        # 1. LOGO OBEN RECHTS
-        col_leer, col_logo_bild = st.columns([6, 4])
-        with col_logo_bild:
+        
+        # OBERE REIHE: Logo und Dropdown direkt nebeneinander
+        col_logo, col_dropdown = st.columns([1, 2], gap="medium")
+        with col_logo:
             try:
                 st.image("I spider.png", use_container_width=True)
             except FileNotFoundError:
-                st.warning("Logo nicht gefunden")
+                st.warning("Logo fehlt")
         
-        # 2. SET-AUSWAHL
-        st.selectbox(
-            "Wähle dein Set:",
-            options=set_optionen,
-            key="set_auswahl_box",
-            on_change=wechsle_set,
-            label_visibility="collapsed"
-        )
+        with col_dropdown:
+            st.selectbox(
+                "Set-Auswahl", # Unsichtbar gemacht im nächsten Befehl
+                options=set_optionen,
+                key="set_auswahl_box",
+                on_change=wechsle_set,
+                label_visibility="collapsed"
+            )
         
-        # 3. TEXTE (Mit sanftem Abstand nach oben und unten)
+        # TEXT
         text_anzeige = ""
         if st.session_state.schritt == 1:
             text_anzeige = "What is the German idiom?"
@@ -225,15 +202,15 @@ else:
         elif st.session_state.schritt == 4:
             text_anzeige = "Here is the correct answer!"
             
-        st.markdown(f"<h3>{text_anzeige}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<div class='frage-text'>{text_anzeige}</div>", unsafe_allow_html=True)
         
-        # 4. BUTTON (Zentriert)
-        col_spacer1, col_btn, col_spacer2 = st.columns([1, 2, 1])
+        # BUTTON (In der Mitte zentriert)
+        col_spacer_l, col_btn, col_spacer_r = st.columns([1, 2, 1])
         with col_btn:
             if st.session_state.schritt < 4:
-                st.button("Go on", on_click=naechster_schritt, use_container_width=True)
+                st.button("Go on", on_click=naechster_schritt)
             else:
-                st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
+                st.button("Next idiom", on_click=naechster_schritt)
         
-        # 5. COUNTER 
-        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 15px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
+        # COUNTER (Ganz unten rechts)
+        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 5vh;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
