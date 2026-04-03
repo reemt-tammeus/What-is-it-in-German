@@ -137,10 +137,14 @@ else:
             
         st.write("---")
         
-        if st.session_state.schritt < 4:
-            st.button("Go on", on_click=naechster_schritt, use_container_width=True)
-        else:
-            st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
+        # HIER GEÄNDERT: Button wird in eine zentrierte, schmalere Spalte gelegt
+        # Die Zahlen [1, 2, 1] bedeuten: 25% Platz links, 50% für den Button, 25% Platz rechts
+        col_spacer1, col_btn, col_spacer2 = st.columns([1, 2, 1])
+        with col_btn:
+            if st.session_state.schritt < 4:
+                st.button("Go on", on_click=naechster_schritt, use_container_width=True)
+            else:
+                st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
         # Zeigt an, bei welchem Bild ihr gerade seid
         st.markdown(f"<p style='text-align: right; color: gray;'>Idiom {st.session_state.idiom_index + 1} / {len(idioms_daten)}</p>", unsafe_allow_html=True)
@@ -162,8 +166,8 @@ else:
                     st.image(bild2, use_container_width=True)
 
                 elif st.session_state.schritt == 3:
-                    # HIER GEÄNDERT: Startet das Zeichnen erst bei 93% (verdeckt nur 7% für 2-zeilige Antworten)
-                    draw.rectangle([0, hoehe * 0.93, breite, hoehe], fill=masken_farbe)
+                    # HIER GEÄNDERT: Startet das Zeichnen bei 90% (verdeckt exakt 10%)
+                    draw.rectangle([0, hoehe * 0.90, breite, hoehe], fill=masken_farbe)
                     st.image(bild2, use_container_width=True)
 
                 elif st.session_state.schritt == 4:
