@@ -18,26 +18,25 @@ st.markdown(
         background-color: {masken_farbe} !important;
     }}
     
-    /* Standard-Textfarbe weiß (HINWEIS: 'div' wurde hier entfernt, um Dropdowns nicht zu zerstören!) */
-    h1, h2, h3, p, span, label, li {{
+    /* Standard-Textfarbe weiß (außerhalb des Dropdowns) */
+    .main h1, .main h2, .main p, .main span, .main label {{
         color: #FFFFFF !important;
     }}
     
-    /* RADIKALE PLATZERSPARNIS: Entfernt das obere Padding von Streamlit fast komplett */
+    /* Nimmt das obere Padding weg, ERLAUBT ABER SCROLLEN falls der Bildschirm extrem klein ist (kein Abschneiden mehr!) */
     .block-container {{
-        padding-top: 2rem !important;
-        padding-bottom: 0rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
         max-width: 98% !important;
-        overflow: hidden !important; /* Verhindert das Entstehen von Scrollbars */
     }}
 
-    /* Schrift für die Texte (Subheader) zentrieren und Ränder verkleinern */
+    /* Textformatierung */
     h3 {{
         color: #FFFFFF !important;
-        font-size: 48px !important;
+        font-size: 42px !important;
         line-height: 1.3 !important;
         text-align: center !important;
-        margin-top: 0px !important;
+        margin-top: 20px !important;
         margin-bottom: 30px !important;
     }}
 
@@ -80,31 +79,22 @@ st.markdown(
     }}
     
     /* --- DROP-DOWN STYLING REPARIERT --- */
-    
-    /* Das Hauptfeld der Selectbox */
+    /* Geschlossener Zustand */
     .stSelectbox div[data-baseweb="select"] > div {{
-        background-color: #111111 !important; /* Dunkelgrauer Hintergrund */
+        background-color: #111111 !important;
         border: 2px solid #FFFFFF !important;
     }}
-    
-    /* Text im Hauptfeld */
     .stSelectbox div[data-baseweb="select"] span {{
         color: #FFFFFF !important;
         font-size: 24px !important;
     }}
-
-    /* Die aufklappende Liste (Popover-Menü) */
-    ul[data-baseweb="menu"] {{
-        background-color: #111111 !important;
-    }}
     
-    ul[data-baseweb="menu"] li {{
-        color: #FFFFFF !important;
+    /* Geöffneter Zustand (Dropdown-Liste) -> Erzwungen auf schwarze Schrift für Lesbarkeit */
+    div[data-baseweb="popover"] li {{
+        color: #000000 !important; 
         font-size: 20px !important;
     }}
-    
-    /* Hover-Effekt, wenn man mit der Maus über eine Set-Option fährt */
-    ul[data-baseweb="menu"] li:hover, ul[data-baseweb="menu"] li[aria-selected="true"] {{
+    div[data-baseweb="popover"] li:hover {{
         background-color: #4CAF50 !important;
         color: #000000 !important;
     }}
@@ -196,7 +186,8 @@ else:
                         st.image(bild2, use_container_width=True)
 
                     elif st.session_state.schritt == 3:
-                        draw.rectangle([0, hoehe * 0.90, breite, hoehe], fill=masken_farbe)
+                        # HIER GEÄNDERT: Maske auf 12% hochgezogen (0.88 statt 0.90), damit auch bei Bild 1 der rote Kreis weg ist
+                        draw.rectangle([0, hoehe * 0.88, breite, hoehe], fill=masken_farbe)
                         st.image(bild2, use_container_width=True)
 
                     elif st.session_state.schritt == 4:
@@ -204,7 +195,7 @@ else:
             except FileNotFoundError:
                 st.error(f"Bild nicht gefunden: {bild_1_pfad} oder {bild_2_pfad}")
 
-    # RECHTE SEITE: Steuerung (Kompakt und ohne scrollen)
+    # RECHTE SEITE: Steuerung 
     with col_steuerung:
         # 1. LOGO OBEN RECHTS
         col_leer, col_logo_bild = st.columns([6, 4])
@@ -223,10 +214,7 @@ else:
             label_visibility="collapsed"
         )
         
-        # Dynamischer Abstandhalter
-        st.markdown("<div style='height: 10vh;'></div>", unsafe_allow_html=True)
-        
-        # 3. TEXTE
+        # 3. TEXTE (Mit sanftem Abstand nach oben und unten)
         text_anzeige = ""
         if st.session_state.schritt == 1:
             text_anzeige = "What is the German idiom?"
@@ -239,7 +227,7 @@ else:
             
         st.markdown(f"<h3>{text_anzeige}</h3>", unsafe_allow_html=True)
         
-        # 4. BUTTON
+        # 4. BUTTON (Zentriert)
         col_spacer1, col_btn, col_spacer2 = st.columns([1, 2, 1])
         with col_btn:
             if st.session_state.schritt < 4:
@@ -247,5 +235,5 @@ else:
             else:
                 st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
-        # 5. COUNTER
-        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 10px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
+        # 5. COUNTER 
+        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 15px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
