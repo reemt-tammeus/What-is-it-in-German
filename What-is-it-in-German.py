@@ -4,8 +4,8 @@ import os
 import json
 import random
 
-# Setzt das Layout auf die volle 16:9 Breite
-st.set_page_config(page_title="Say it in German", layout="wide")
+# Setzt das Layout auf die volle 16:9 Breite und den Tab-Titel
+st.set_page_config(page_title="I spider", layout="wide")
 
 masken_farbe = "#000000" 
 
@@ -113,7 +113,7 @@ else:
     # --- HEADER-AUFTEILUNG (Titel links, Logo rechts) ---
     col_titel, col_logo = st.columns([85, 15], gap="medium")
     with col_titel:
-        st.title("🗣️ Say it in English!")
+        st.title("I spider")
     with col_logo:
         # Logo zentriert und passend groß anzeigen
         try:
