@@ -17,24 +17,28 @@ st.markdown(
     .stApp {{
         background-color: {masken_farbe} !important;
     }}
-    /* Standard-Textfarbe weiß */
-    h1, h2, p, span, div {{
+    
+    /* Standard-Textfarbe weiß (HINWEIS: 'div' wurde hier entfernt, um Dropdowns nicht zu zerstören!) */
+    h1, h2, h3, p, span, label, li {{
         color: #FFFFFF !important;
     }}
     
-    /* Entfernt den Standard-Abstand am oberen Bildschirmrand, damit das große Bild Platz hat */
+    /* RADIKALE PLATZERSPARNIS: Entfernt das obere Padding von Streamlit fast komplett */
     .block-container {{
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        padding-top: 2rem !important;
+        padding-bottom: 0rem !important;
         max-width: 98% !important;
+        overflow: hidden !important; /* Verhindert das Entstehen von Scrollbars */
     }}
 
-    /* Schrift für die Subheader (Texte) anpassen */
+    /* Schrift für die Texte (Subheader) zentrieren und Ränder verkleinern */
     h3 {{
         color: #FFFFFF !important;
         font-size: 48px !important;
         line-height: 1.3 !important;
-        margin-top: 0 !important;
+        text-align: center !important;
+        margin-top: 0px !important;
+        margin-bottom: 30px !important;
     }}
 
     /* Smartboard-Button */
@@ -61,7 +65,7 @@ st.markdown(
         color: #000000 !important; 
     }}
     
-    /* Bildzentrierung und feste Höhe WIEDER AUF 85% */
+    /* BILDGRÖSSE BLEIBT AUF 85% */
     [data-testid="stImage"] {{
         display: flex !important;
         justify-content: center !important;
@@ -75,14 +79,34 @@ st.markdown(
         object-fit: contain !important; 
     }}
     
-    /* DROP-DOWN STYLING (Set-Auswahl) */
-    .stSelectbox div[data-baseweb="select"] {{
-        font-size: 24px !important;
+    /* --- DROP-DOWN STYLING REPARIERT --- */
+    
+    /* Das Hauptfeld der Selectbox */
+    .stSelectbox div[data-baseweb="select"] > div {{
+        background-color: #111111 !important; /* Dunkelgrauer Hintergrund */
         border: 2px solid #FFFFFF !important;
     }}
-    .stSelectbox label {{
-        font-size: 20px !important;
+    
+    /* Text im Hauptfeld */
+    .stSelectbox div[data-baseweb="select"] span {{
         color: #FFFFFF !important;
+        font-size: 24px !important;
+    }}
+
+    /* Die aufklappende Liste (Popover-Menü) */
+    ul[data-baseweb="menu"] {{
+        background-color: #111111 !important;
+    }}
+    
+    ul[data-baseweb="menu"] li {{
+        color: #FFFFFF !important;
+        font-size: 20px !important;
+    }}
+    
+    /* Hover-Effekt, wenn man mit der Maus über eine Set-Option fährt */
+    ul[data-baseweb="menu"] li:hover, ul[data-baseweb="menu"] li[aria-selected="true"] {{
+        background-color: #4CAF50 !important;
+        color: #000000 !important;
     }}
     </style>
     """,
@@ -100,7 +124,7 @@ def lade_idiom_daten():
 
 all_idioms_daten = lade_idiom_daten()
 
-# --- SET-WECHSEL LOGIK (Jetzt 100% zuverlässig) ---
+# --- SET-WECHSEL LOGIK ---
 def wechsle_set():
     auswahl = st.session_state.set_auswahl_box
     set_nummer = int(auswahl.split(" ")[1])
@@ -125,21 +149,17 @@ if 'idiom_index' not in st.session_state:
 if 'schritt' not in st.session_state:
     st.session_state.schritt = 1
 if 'aktuelle_set_shuffled' not in st.session_state:
-    # Wenn die App das allererste Mal startet, laden wir Set 1 manuell
     if all_idioms_daten:
         pool = all_idioms_daten[0:6]
         random.shuffle(pool)
         st.session_state.aktuelle_set_shuffled = pool
 
-# Überprüfen, ob Daten geladen wurden
 if not all_idioms_daten:
     st.error("Fehler: Konnte 'idioms.json' nicht finden. Bitte erstelle die Datei im selben Ordner.")
 else:
-    # Set-Optionen vorbereiten
     set_optionen = [f"Set {i} (Idioms {(i-1)*6+1}-{i*6})" for i in range(1, 10)]
     set_optionen.append("Set 10 (Idioms 55-59)")
 
-    # --- SPIEL-FUNKTIONEN ---
     def naechster_schritt():
         aktuelle_bilder = st.session_state.aktuelle_set_shuffled
         if st.session_state.schritt >= 4:
@@ -184,41 +204,40 @@ else:
             except FileNotFoundError:
                 st.error(f"Bild nicht gefunden: {bild_1_pfad} oder {bild_2_pfad}")
 
-    # RECHTE SEITE: Steuerung
+    # RECHTE SEITE: Steuerung (Kompakt und ohne scrollen)
     with col_steuerung:
-        # 1. LOGO OBEN RECHTS (Wir nutzen kleine Sub-Spalten, um das Logo nach rechts zu schieben)
-        col_leer, col_logo_bild = st.columns([7, 3])
+        # 1. LOGO OBEN RECHTS
+        col_leer, col_logo_bild = st.columns([6, 4])
         with col_logo_bild:
             try:
-                logo_img = Image.open("I spider.png")
-                st.image(logo_img, use_container_width=True)
+                st.image("I spider.png", use_container_width=True)
             except FileNotFoundError:
                 st.warning("Logo nicht gefunden")
-
-        st.write("---")
         
         # 2. SET-AUSWAHL
         st.selectbox(
             "Wähle dein Set:",
             options=set_optionen,
             key="set_auswahl_box",
-            on_change=wechsle_set # Diese Zeile repariert den Wechsel!
+            on_change=wechsle_set,
+            label_visibility="collapsed"
         )
         
-        st.write("---")
-        st.write("") # Ein bisschen Platz
+        # Dynamischer Abstandhalter
+        st.markdown("<div style='height: 10vh;'></div>", unsafe_allow_html=True)
         
         # 3. TEXTE
+        text_anzeige = ""
         if st.session_state.schritt == 1:
-            st.subheader("What is the German idiom?")
+            text_anzeige = "What is the German idiom?"
         elif st.session_state.schritt == 2:
-            st.subheader("Recognize the idiom in German!")
+            text_anzeige = "Recognize the idiom in German!"
         elif st.session_state.schritt == 3:
-            st.subheader("What is the correct English phrase?")
+            text_anzeige = "What is the correct English phrase?"
         elif st.session_state.schritt == 4:
-            st.subheader("Here is the correct answer!")
+            text_anzeige = "Here is the correct answer!"
             
-        st.write("---")
+        st.markdown(f"<h3>{text_anzeige}</h3>", unsafe_allow_html=True)
         
         # 4. BUTTON
         col_spacer1, col_btn, col_spacer2 = st.columns([1, 2, 1])
@@ -229,4 +248,4 @@ else:
                 st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
         # 5. COUNTER
-        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 20px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 10px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
