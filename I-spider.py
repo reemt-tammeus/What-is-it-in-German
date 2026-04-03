@@ -18,32 +18,56 @@ st.markdown(
         background-color: {masken_farbe} !important;
     }}
     
-    /* Entfernt die riesigen Ränder oben und unten, verhindert Scrollen */
+    /* Zwingt die App, den gesamten Platz zu nutzen, verhindert Scrollen */
     .block-container {{
-        padding-top: 1rem !important;
+        padding-top: 2rem !important;
         padding-bottom: 0rem !important;
         max-width: 98% !important;
+        height: 100vh !important;
+        overflow: hidden !important;
     }}
 
-    /* Eigene Klasse für unseren Fragentext (verhindert, dass wir andere Streamlit-Texte kaputt machen) */
+    /* Standard-Textfarbe weiß */
+    .main h1, .main h2, .main p, .main span, .main label {{
+        color: #FFFFFF !important;
+    }}
+
+    /* BILD-GEFÄNGNIS: Verhindert, dass Hochkant-Bilder das Layout sprengen */
+    [data-testid="stImage"] {{
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: 85vh !important; /* Maximale Höhe strikt vorgegeben */
+        width: 100% !important;
+    }}
+    
+    /* Greift nur auf das große Lern-Bild zu */
+    div:first-child > [data-testid="stImage"] img {{
+        max-height: 85vh !important; /* Darf nicht höher werden */
+        max-width: 100% !important;
+        width: auto !important; /* Verhindert Streckung in der Breite */
+        object-fit: contain !important; /* Behält Seitenverhältnis bei! */
+    }}
+
+    /* ZEILE 3: Die Frage (Flexible Abstände statt starrer vh-Werte) */
     .frage-text {{
         color: #FFFFFF !important;
         font-size: 42px !important;
         line-height: 1.3 !important;
         text-align: center !important;
-        margin-top: 10vh !important; /* Dynamischer Abstand nach oben */
-        margin-bottom: 5vh !important; /* Dynamischer Abstand nach unten */
+        margin-top: 50px !important; /* Fester, berechenbarer Abstand */
+        margin-bottom: 50px !important; /* Fester, berechenbarer Abstand */
         font-weight: bold;
     }}
 
-    /* Smartboard-Button */
+    /* ZEILE 4: Smartboard-Button */
     .stButton>button {{
         min-height: 80px !important;
         border-radius: 10px;
         border: 3px solid #4CAF50 !important;
         background-color: transparent !important;
         transition: all 0.3s ease-in-out !important;
-        width: 100% !important;
+        width: 100% !important; /* Füllt die Zeile komplett aus */
     }}
     
     .stButton>button p {{
@@ -61,18 +85,22 @@ st.markdown(
         color: #000000 !important; 
     }}
     
-    /* BILDGRÖSSE: Fest auf 85% der Bildschirmhöhe angenagelt */
-    [data-testid="stImage"] {{
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
+    /* --- DROP-DOWN STYLING (Zeile 2) --- */
+    .stSelectbox div[data-baseweb="select"] > div {{
+        background-color: #111111 !important;
+        border: 2px solid #FFFFFF !important;
     }}
-    
-    [data-testid="stImage"] img {{
-        height: 85vh !important;     
-        width: auto !important;      
-        max-width: 100% !important;  
-        object-fit: contain !important; 
+    .stSelectbox div[data-baseweb="select"] span {{
+        color: #FFFFFF !important;
+        font-size: 24px !important;
+    }}
+    div[data-baseweb="popover"] li {{
+        color: #000000 !important; 
+        font-size: 20px !important;
+    }}
+    div[data-baseweb="popover"] li:hover {{
+        background-color: #4CAF50 !important;
+        color: #000000 !important;
     }}
     </style>
     """,
@@ -149,8 +177,9 @@ else:
             bild_2_pfad = os.path.join("Pictures", aktuelles_idiom["image_b"])
             
             try:
+                # use_container_width=True weggelassen! Das CSS übernimmt jetzt die perfekte Anpassung
                 if st.session_state.schritt == 1:
-                    st.image(bild_1_pfad, use_container_width=True)
+                    st.image(bild_1_pfad)
 
                 elif st.session_state.schritt in [2, 3, 4]:
                     bild2 = Image.open(bild_2_pfad).convert("RGB")
@@ -159,39 +188,46 @@ else:
 
                     if st.session_state.schritt == 2:
                         draw.rectangle([0, hoehe * 0.25, breite, hoehe], fill=masken_farbe)
-                        st.image(bild2, use_container_width=True)
+                        st.image(bild2)
 
                     elif st.session_state.schritt == 3:
-                        # Maske liegt stabil bei 12%, verdeckt auch den tiefsten Lösungs-Kreis
                         draw.rectangle([0, hoehe * 0.88, breite, hoehe], fill=masken_farbe)
-                        st.image(bild2, use_container_width=True)
+                        st.image(bild2)
 
                     elif st.session_state.schritt == 4:
-                        st.image(bild2, use_container_width=True)
+                        st.image(bild2)
             except FileNotFoundError:
                 st.error(f"Bild nicht gefunden: {bild_1_pfad} oder {bild_2_pfad}")
 
-    # RECHTE SEITE: Steuerung (Robustes Layout)
+    # RECHTE SEITE: "Blinde Tabelle"
     with col_steuerung:
         
-        # OBERE REIHE: Logo und Dropdown direkt nebeneinander
-        col_logo, col_dropdown = st.columns([1, 2], gap="medium")
-        with col_logo:
-            try:
-                st.image("I spider.png", use_container_width=True)
-            except FileNotFoundError:
-                st.warning("Logo fehlt")
-        
-        with col_dropdown:
-            st.selectbox(
-                "Set-Auswahl", # Unsichtbar gemacht im nächsten Befehl
-                options=set_optionen,
-                key="set_auswahl_box",
-                on_change=wechsle_set,
-                label_visibility="collapsed"
+        # 1. ZEILE: Logo
+        try:
+            # Inline-Styling um das Logo-CSS vom großen Bild zu trennen
+            st.markdown(
+                """
+                <div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
+                    <img src="app/static/I spider.png" width="200" onerror="this.style.display='none'">
+                </div>
+                """, 
+                unsafe_allow_html=True
             )
+            # Fallback falls Streamlit statische Dateien anders handelt
+            st.image("I spider.png", width=200) 
+        except FileNotFoundError:
+            pass # Fehlermeldung unterdrückt für sauberes Layout
+            
+        # 2. ZEILE: Menü
+        st.selectbox(
+            "Set-Auswahl", 
+            options=set_optionen,
+            key="set_auswahl_box",
+            on_change=wechsle_set,
+            label_visibility="collapsed"
+        )
         
-        # TEXT
+        # 3. ZEILE: Frage
         text_anzeige = ""
         if st.session_state.schritt == 1:
             text_anzeige = "What is the German idiom?"
@@ -204,13 +240,11 @@ else:
             
         st.markdown(f"<div class='frage-text'>{text_anzeige}</div>", unsafe_allow_html=True)
         
-        # BUTTON (In der Mitte zentriert)
-        col_spacer_l, col_btn, col_spacer_r = st.columns([1, 2, 1])
-        with col_btn:
-            if st.session_state.schritt < 4:
-                st.button("Go on", on_click=naechster_schritt)
-            else:
-                st.button("Next idiom", on_click=naechster_schritt)
+        # 4. ZEILE: Button
+        if st.session_state.schritt < 4:
+            st.button("Go on", on_click=naechster_schritt, use_container_width=True)
+        else:
+            st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
-        # COUNTER (Ganz unten rechts)
-        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 5vh;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
+        # COUNTER
+        st.markdown(f"<p style='text-align: right; color: gray; margin-top: 10px;'>Idiom {st.session_state.idiom_index + 1} / {len(st.session_state.aktuelle_set_shuffled)}</p>", unsafe_allow_html=True)
