@@ -17,31 +17,34 @@
             overflow: hidden;
         }
 
-        /* LINKE SPALTE: BILD */
+        /* LINKE SPALTE: BILD - MAXIMIERT FÜR SMARTBOARD */
         #left-pane {
-            flex: 1.2;
+            flex: 1.2; /* Mehr Platz für das Bild (ca. 55% der Breite) */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
+            height: 100vh; /* Nutzt die VOLLE Höhe des Bildschirms */
+            padding: 0; /* KEIN Padding, Bild darf bis an den Rand gehen! */
+            background-color: #000000;
         }
 
         #image-canvas {
-            max-height: 85vh; /* Zwingt das Bild auf max. 85% Höhe */
-            max-width: 100%;
-            object-fit: contain;
+            width: 100%; /* Erlaubt dem Bild, die volle Breite zu nutzen */
+            height: 100%; /* Erlaubt dem Bild, die volle Höhe zu nutzen */
+            object-fit: contain; /* Behält Seitenverhältnis bei, füllt den Platz maximal aus, nichts wird abgeschnitten! */
         }
 
-        /* RECHTE SPALTE: STEUERUNG */
+        /* RECHTE SPALTE: STEUERUNG (unverändert, da "super") */
         #right-pane {
-            flex: 1;
+            flex: 1; /* Ca. 45% der Breite */
             max-width: 600px;
             display: flex;
             flex-direction: column;
             padding: 40px;
             box-sizing: border-box;
             border-left: 1px solid #333; /* Dezente Trennlinie */
+            background-color: #000000;
+            overflow-y: auto; /* Erlaubt Scrollen NUR auf der rechten Seite, falls der Text extrem lang wird */
         }
 
         /* LOGO */
