@@ -127,20 +127,20 @@ else:
         st.write("---")
         
         if st.session_state.schritt == 1:
-            st.subheader("🤔 What is the German idiom?")
+            st.subheader("What is the German idiom?")
         elif st.session_state.schritt == 2:
             st.subheader("")
         elif st.session_state.schritt == 3:
-            st.subheader("❓ What is the correct English phrase?")
+            st.subheader("What is the correct English phrase?")
         elif st.session_state.schritt == 4:
-            st.subheader("✅ Here is the correct answer!")
+            st.subheader("Here is the correct answer!")
             
         st.write("---")
         
         if st.session_state.schritt < 4:
-            st.button("Go on ➡️", on_click=naechster_schritt, use_container_width=True)
+            st.button("Go on", on_click=naechster_schritt, use_container_width=True)
         else:
-            st.button("Next idiom 🔄", on_click=naechster_schritt, use_container_width=True)
+            st.button("Next idiom", on_click=naechster_schritt, use_container_width=True)
         
         # Zeigt an, bei welchem Bild ihr gerade seid (optional, hilft zur Orientierung)
         st.markdown(f"<p style='text-align: right; color: gray;'>Idiom {st.session_state.idiom_index + 1} / {len(idioms_daten)}</p>", unsafe_allow_html=True)
